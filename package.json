@@ -1,0 +1,35 @@
+{
+  "name": "atp-api-logger",
+  "version": "1.0.4",
+  "description": "Utility to log api calls for analysis.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Achieve-Test-Prep/atp-api-logger.git"
+  },
+  "keywords": [
+    "logs",
+    "logger",
+    "api",
+    "javascript",
+    "typescript",
+    "fetch",
+    "rtk"
+  ],
+  "author": "achieve",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Achieve-Test-Prep/atp-api-logger/issues"
+  },
+  "homepage": "https://github.com/Achieve-Test-Prep/atp-api-logger#readme",
+  "dependencies": {
+    "bowser": "^2.11.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
