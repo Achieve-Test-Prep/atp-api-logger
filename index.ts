@@ -20,7 +20,7 @@ export enum SupportedServerTypes {
   SALES = "4",
   SWA = "5",
   MEET = "6",
-  LQ = "7",
+  AJAXHANDLER = "7",
 }
 
 export type LogApiPayload = {
