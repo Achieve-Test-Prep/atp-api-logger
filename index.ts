@@ -268,14 +268,16 @@ export function extractBrowserInfo(): {
   // Operating System
   if (userAgent.match(/Windows/i)) {
     browserInfo.os = "Windows";
+  } else if (userAgent.match(/Android/i)) {
+    browserInfo.os = "Android";
+  } else if (userAgent.match(/iPhone/i)) {
+    browserInfo.os = "iOS";
+  } else if (userAgent.match(/iPad/i)) {
+    browserInfo.os = "iOS";
   } else if (userAgent.match(/Mac/i)) {
     browserInfo.os = "macOS";
   } else if (userAgent.match(/Linux/i)) {
     browserInfo.os = "Linux";
-  } else if (userAgent.match(/Android/i)) {
-    browserInfo.os = "Android";
-  } else if (userAgent.match(/iOS/i)) {
-    browserInfo.os = "iOS";
   } else {
     browserInfo.os = "Unknown";
   }
