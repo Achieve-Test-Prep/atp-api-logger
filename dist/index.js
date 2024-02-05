@@ -10,13 +10,8 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Logger = exports.SupportedServerTypes = exports.SupportedProducts = void 0;
-/* eslint-disable no-bitwise */
-const bowser_1 = __importDefault(require("bowser"));
+exports.extractBrowserInfo = exports.Logger = exports.SupportedServerTypes = exports.SupportedProducts = void 0;
 var SupportedProducts;
 (function (SupportedProducts) {
     SupportedProducts["PREP_PORTAL"] = "0";
@@ -37,16 +32,16 @@ var SupportedServerTypes;
     SupportedServerTypes["SALES"] = "4";
     SupportedServerTypes["SWA"] = "5";
     SupportedServerTypes["MEET"] = "6";
-    SupportedServerTypes["LQ"] = "7";
+    SupportedServerTypes["AJAXHANDLER"] = "7";
 })(SupportedServerTypes || (exports.SupportedServerTypes = SupportedServerTypes = {}));
 class Logger {
     constructor(product, enabled = false) {
-        const browserInfo = bowser_1.default.parse(window.navigator.userAgent);
+        const browserInfo = extractBrowserInfo();
         this.product = product;
         this.browser = browserInfo
-            ? `${browserInfo.browser.name} | ${browserInfo.browser.version}`
+            ? `${browserInfo.browser}|${browserInfo.version}`
             : "";
-        this.os = browserInfo.os.name || "";
+        this.os = browserInfo.os || "";
         this.session_id = "";
         this.enabled = enabled;
         this.initSession();
@@ -148,3 +143,71 @@ class Logger {
 exports.Logger = Logger;
 Logger.LOGGER_KEY = "tracker_session_id";
 Logger.instance = null;
+function extractBrowserInfo() {
+    const userAgent = window.navigator.userAgent;
+    const browserInfo = {
+        os: "",
+        browser: "",
+        version: "",
+    };
+    // Operating System
+    if (userAgent.match(/Windows/i)) {
+        browserInfo.os = "Windows";
+    }
+    else if (userAgent.match(/Mac/i)) {
+        browserInfo.os = "macOS";
+    }
+    else if (userAgent.match(/Linux/i)) {
+        browserInfo.os = "Linux";
+    }
+    else if (userAgent.match(/Android/i)) {
+        browserInfo.os = "Android";
+    }
+    else if (userAgent.match(/iOS/i)) {
+        browserInfo.os = "iOS";
+    }
+    else {
+        browserInfo.os = "Unknown";
+    }
+    // Browser Name and Version
+    if (userAgent.match(/MSIE/i) || userAgent.match(/Trident/i)) {
+        browserInfo.browser = "Internet Explorer";
+        const match = userAgent.match(/(?:MSIE |rv:)(\d+(\.\d+)?)/i);
+        if (match) {
+            browserInfo.version = match[1];
+        }
+    }
+    else if (userAgent.match(/Edge/i)) {
+        browserInfo.browser = "Microsoft Edge";
+        const match = userAgent.match(/Edge\/(\d+(\.\d+)?)/i);
+        if (match) {
+            browserInfo.version = match[1];
+        }
+    }
+    else if (userAgent.match(/Firefox/i)) {
+        browserInfo.browser = "Mozilla Firefox";
+        const match = userAgent.match(/Firefox\/(\d+(\.\d+)?)/i);
+        if (match) {
+            browserInfo.version = match[1];
+        }
+    }
+    else if (userAgent.match(/Chrome/i)) {
+        browserInfo.browser = "Google Chrome";
+        const match = userAgent.match(/Chrome\/(\d+(\.\d+)?)/i);
+        if (match) {
+            browserInfo.version = match[1];
+        }
+    }
+    else if (userAgent.match(/Safari/i)) {
+        browserInfo.browser = "Safari";
+        const match = userAgent.match(/Version\/(\d+(\.\d+)?)/i);
+        if (match) {
+            browserInfo.version = match[1];
+        }
+    }
+    else {
+        browserInfo.browser = "Unknown";
+    }
+    return browserInfo;
+}
+exports.extractBrowserInfo = extractBrowserInfo;

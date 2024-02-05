@@ -1,6 +1,3 @@
-/* eslint-disable no-bitwise */
-import Bowser from "bowser";
-
 export enum SupportedProducts {
   PREP_PORTAL = "0",
   INSTRUCTOR_PORTAL = "1",
@@ -102,12 +99,12 @@ export class Logger {
   private enabled: boolean;
 
   private constructor(product: SupportedProducts, enabled = false) {
-    const browserInfo = Bowser.parse(window.navigator.userAgent);
+    const browserInfo = extractBrowserInfo();
     this.product = product;
     this.browser = browserInfo
-      ? `${browserInfo.browser.name} | ${browserInfo.browser.version}`
+      ? `${browserInfo.browser}|${browserInfo.version}`
       : "";
-    this.os = browserInfo.os.name || "";
+    this.os = browserInfo.os || "";
     this.session_id = "";
     this.enabled = enabled;
     this.initSession();
@@ -254,4 +251,69 @@ export class Logger {
       },
     });
   }
+}
+
+export function extractBrowserInfo(): {
+  os: string;
+  browser: string;
+  version: string;
+} {
+  const userAgent = window.navigator.userAgent;
+  const browserInfo: { os: string; browser: string; version: string } = {
+    os: "",
+    browser: "",
+    version: "",
+  };
+
+  // Operating System
+  if (userAgent.match(/Windows/i)) {
+    browserInfo.os = "Windows";
+  } else if (userAgent.match(/Mac/i)) {
+    browserInfo.os = "macOS";
+  } else if (userAgent.match(/Linux/i)) {
+    browserInfo.os = "Linux";
+  } else if (userAgent.match(/Android/i)) {
+    browserInfo.os = "Android";
+  } else if (userAgent.match(/iOS/i)) {
+    browserInfo.os = "iOS";
+  } else {
+    browserInfo.os = "Unknown";
+  }
+
+  // Browser Name and Version
+  if (userAgent.match(/MSIE/i) || userAgent.match(/Trident/i)) {
+    browserInfo.browser = "Internet Explorer";
+    const match = userAgent.match(/(?:MSIE |rv:)(\d+(\.\d+)?)/i);
+    if (match) {
+      browserInfo.version = match[1];
+    }
+  } else if (userAgent.match(/Edge/i)) {
+    browserInfo.browser = "Microsoft Edge";
+    const match = userAgent.match(/Edge\/(\d+(\.\d+)?)/i);
+    if (match) {
+      browserInfo.version = match[1];
+    }
+  } else if (userAgent.match(/Firefox/i)) {
+    browserInfo.browser = "Mozilla Firefox";
+    const match = userAgent.match(/Firefox\/(\d+(\.\d+)?)/i);
+    if (match) {
+      browserInfo.version = match[1];
+    }
+  } else if (userAgent.match(/Chrome/i)) {
+    browserInfo.browser = "Google Chrome";
+    const match = userAgent.match(/Chrome\/(\d+(\.\d+)?)/i);
+    if (match) {
+      browserInfo.version = match[1];
+    }
+  } else if (userAgent.match(/Safari/i)) {
+    browserInfo.browser = "Safari";
+    const match = userAgent.match(/Version\/(\d+(\.\d+)?)/i);
+    if (match) {
+      browserInfo.version = match[1];
+    }
+  } else {
+    browserInfo.browser = "Unknown";
+  }
+
+  return browserInfo;
 }
