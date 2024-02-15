@@ -1,23 +1,21 @@
 export enum SupportedProducts {
-  PREP_PORTAL = "0",
-  INSTRUCTOR_PORTAL = "1",
-  UNIFIED_CHECKOUT = "2",
-  COLLEGE_BRIDGE = "3",
-  LQ = "4",
-  SWA = "5",
-  SALES_PORTAL = "6",
-  MEET = "7",
+  PREP_PORTAL = "1",
+  INSTRUCTOR_PORTAL = "2",
+  UNIFIED_CHECKOUT = "3",
+  COLLEGE_BRIDGE = "4",
+  LQ = "5",
+  SWA = "6",
+  SALES_PORTAL = "7",
 }
 
 export enum SupportedServerTypes {
-  PREP = "0",
-  AOD = "1",
-  INSTRUCTOR = "2",
-  PAY = "3",
-  SALES = "4",
-  SWA = "5",
-  MEET = "6",
-  AJAXHANDLER = "7",
+  PREP = "1",
+  AOD = "2",
+  INSTRUCTOR = "3",
+  PAY = "4",
+  SALES = "5",
+  SWA = "6",
+  COLLEGE_BRIDGE = "7",
 }
 
 export type LogApiPayload = {
