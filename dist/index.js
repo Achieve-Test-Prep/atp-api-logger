@@ -14,25 +14,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.extractBrowserInfo = exports.Logger = exports.SupportedServerTypes = exports.SupportedProducts = void 0;
 var SupportedProducts;
 (function (SupportedProducts) {
-    SupportedProducts["PREP_PORTAL"] = "0";
-    SupportedProducts["INSTRUCTOR_PORTAL"] = "1";
-    SupportedProducts["UNIFIED_CHECKOUT"] = "2";
-    SupportedProducts["COLLEGE_BRIDGE"] = "3";
-    SupportedProducts["LQ"] = "4";
-    SupportedProducts["SWA"] = "5";
-    SupportedProducts["SALES_PORTAL"] = "6";
-    SupportedProducts["MEET"] = "7";
+    SupportedProducts["PREP_PORTAL"] = "1";
+    SupportedProducts["INSTRUCTOR_PORTAL"] = "2";
+    SupportedProducts["UNIFIED_CHECKOUT"] = "3";
+    SupportedProducts["COLLEGE_BRIDGE"] = "4";
+    SupportedProducts["LQ"] = "5";
+    SupportedProducts["SWA"] = "6";
+    SupportedProducts["SALES_PORTAL"] = "7";
 })(SupportedProducts || (exports.SupportedProducts = SupportedProducts = {}));
 var SupportedServerTypes;
 (function (SupportedServerTypes) {
-    SupportedServerTypes["PREP"] = "0";
-    SupportedServerTypes["AOD"] = "1";
-    SupportedServerTypes["INSTRUCTOR"] = "2";
-    SupportedServerTypes["PAY"] = "3";
-    SupportedServerTypes["SALES"] = "4";
-    SupportedServerTypes["SWA"] = "5";
-    SupportedServerTypes["MEET"] = "6";
-    SupportedServerTypes["AJAXHANDLER"] = "7";
+    SupportedServerTypes["PREP"] = "1";
+    SupportedServerTypes["AOD"] = "2";
+    SupportedServerTypes["INSTRUCTOR"] = "3";
+    SupportedServerTypes["PAY"] = "4";
+    SupportedServerTypes["SALES"] = "5";
+    SupportedServerTypes["SWA"] = "6";
+    SupportedServerTypes["COLLEGE_BRIDGE"] = "7";
 })(SupportedServerTypes || (exports.SupportedServerTypes = SupportedServerTypes = {}));
 class Logger {
     constructor(product, enabled = false) {
