@@ -53,6 +53,7 @@ export type TrackPromiseParams = Pick<
 };
 
 type RTKMETA = {
+  data: unknown;
   meta: {
     request: Request;
     response: Response;
@@ -201,9 +202,8 @@ export class Logger {
          * In case of success the response object conains a "data" object
          * In case of error the response object contains an "error" object
          * */
-        const responseClone = response.meta.response.clone();
-        status = responseClone.status;
-        responseData = await responseClone.json();
+        status = response.meta.response.status;
+        responseData = response.data;
       } else {
         // fetch
         const responseClone = response.clone();
