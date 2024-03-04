@@ -1,6 +1,6 @@
 {
   "name": "atp-api-logger",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Utility to log api calls for analysis.",
   "main": "dist/index.js",
   "scripts": {

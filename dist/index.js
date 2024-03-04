@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __rest = (this && this.__rest) || function (s, e) {
     var t = {};
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
@@ -34,6 +43,7 @@ var SupportedServerTypes;
 })(SupportedServerTypes || (exports.SupportedServerTypes = SupportedServerTypes = {}));
 class Logger {
     constructor(product, enabled = false) {
+        this.responseMap = {};
         const browserInfo = extractBrowserInfo();
         this.product = product;
         this.browser = browserInfo
@@ -74,6 +84,7 @@ class Logger {
         this.session_id = "";
         this.customer_id = undefined;
         this.lead_id = undefined;
+        this.responseMap = {};
     }
     setId({ customer_id, lead_id, }) {
         if (lead_id) {
@@ -91,32 +102,47 @@ class Logger {
     }
     trackPromise(promise, _a) {
         var { method, api_name } = _a, payload = __rest(_a, ["method", "api_name"]);
-        if (!this.enabled) {
-            return;
-        }
-        this.initSession();
-        const init_time = new Date();
-        promise
-            .then((response) => {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.enabled) {
+                return;
+            }
+            this.initSession();
+            const init_time = new Date();
+            let apiName = `[${method.toUpperCase()}]${api_name.startsWith("/") ? api_name : `/${api_name}`}`;
             let status = -1;
-            if ("meta" in response) {
-                /*
-                 * RTK Query response
-                 * In case of RTK both success and error responses are returned as fulfilled promises
-                 * In case of success the response object conains a "data" object
-                 * In case of error the response object contains an "error" object
-                 * */
-                status = response.meta.response.status;
+            let responseData = undefined;
+            try {
+                const response = yield promise;
+                if ("meta" in response) {
+                    /*
+                     * RTK Query response
+                     * In case of RTK both success and error responses are returned as fulfilled promises
+                     * In case of success the response object conains a "data" object
+                     * In case of error the response object contains an "error" object
+                     * */
+                    const responseClone = response.meta.response.clone();
+                    status = responseClone.status;
+                    responseData = yield responseClone.json();
+                }
+                else {
+                    // fetch
+                    const responseClone = response.clone();
+                    status = responseClone.status;
+                    responseData = yield responseClone.json();
+                }
             }
-            else {
-                // fetch
-                status = response.status;
+            catch (error) {
+                responseData = null;
+                status = error.status || 600; // 600 for CORS/NETWORK
             }
-            this.track(Object.assign(Object.assign({}, payload), { api_name: `[${method.toUpperCase()}]${api_name.startsWith("/") ? api_name : `/${api_name}`}`, init_time,
-                status, response_time: new Date().getTime() - init_time.getTime() }));
-        })
-            .catch((error) => {
-            this.track(Object.assign(Object.assign({}, payload), { api_name: `[${method.toUpperCase()}]${api_name}`, init_time, status: error.status || 600, response_time: new Date().getTime() - init_time.getTime() }));
+            if (responseData === null ||
+                (responseData !== undefined &&
+                    JSON.stringify(this.responseMap[apiName]) !==
+                        JSON.stringify(responseData))) {
+                this.track(Object.assign(Object.assign({}, payload), { api_name: apiName, init_time,
+                    status, response_time: new Date().getTime() - init_time.getTime() }));
+            }
+            this.responseMap[apiName] = responseData;
         });
     }
     track(_a) {

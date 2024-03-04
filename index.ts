@@ -82,6 +82,8 @@ export class Logger {
 
   private static instance: Logger | null = null;
 
+  private responseMap: Record<string, unknown> = {};
+
   private product: SupportedProducts;
 
   private browser: string;
@@ -148,6 +150,7 @@ export class Logger {
     this.session_id = "";
     this.customer_id = undefined;
     this.lead_id = undefined;
+    this.responseMap = {};
   }
 
   public setId({
@@ -173,7 +176,7 @@ export class Logger {
     this.enabled = false;
   }
 
-  public trackPromise(
+  public async trackPromise(
     promise: Promise<PromiseResponse>,
     { method, api_name, ...payload }: TrackPromiseParams
   ) {
@@ -183,41 +186,51 @@ export class Logger {
     this.initSession();
 
     const init_time = new Date();
+    let apiName = `[${method.toUpperCase()}]${
+      api_name.startsWith("/") ? api_name : `/${api_name}`
+    }`;
+    let status = -1;
+    let responseData = undefined;
 
-    promise
-      .then((response) => {
-        let status = -1;
-        if ("meta" in response) {
-          /*
-           * RTK Query response
-           * In case of RTK both success and error responses are returned as fulfilled promises
-           * In case of success the response object conains a "data" object
-           * In case of error the response object contains an "error" object
-           * */
-          status = response.meta.response.status;
-        } else {
-          // fetch
-          status = response.status;
-        }
-        this.track({
-          ...payload,
-          api_name: `[${method.toUpperCase()}]${
-            api_name.startsWith("/") ? api_name : `/${api_name}`
-          }`,
-          init_time,
-          status,
-          response_time: new Date().getTime() - init_time.getTime(),
-        });
-      })
-      .catch((error) => {
-        this.track({
-          ...payload,
-          api_name: `[${method.toUpperCase()}]${api_name}`,
-          init_time,
-          status: error.status || 600, // 600 for CORS/NETWORK
-          response_time: new Date().getTime() - init_time.getTime(),
-        });
+    try {
+      const response = await promise;
+      if ("meta" in response) {
+        /*
+         * RTK Query response
+         * In case of RTK both success and error responses are returned as fulfilled promises
+         * In case of success the response object conains a "data" object
+         * In case of error the response object contains an "error" object
+         * */
+        const responseClone = response.meta.response.clone();
+        status = responseClone.status;
+        responseData = await responseClone.json();
+      } else {
+        // fetch
+        const responseClone = response.clone();
+        status = responseClone.status;
+        responseData = await responseClone.json();
+      }
+    } catch (error: any) {
+      responseData = null;
+      status = error.status || 600; // 600 for CORS/NETWORK
+    }
+
+    if (
+      responseData === null ||
+      (responseData !== undefined &&
+        JSON.stringify(this.responseMap[apiName]) !==
+          JSON.stringify(responseData))
+    ) {
+      this.track({
+        ...payload,
+        api_name: apiName,
+        init_time,
+        status,
+        response_time: new Date().getTime() - init_time.getTime(),
       });
+    }
+
+    this.responseMap[apiName] = responseData;
   }
 
   private track({ init_time, ...params }: TrackParams) {

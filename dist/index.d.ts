@@ -59,6 +59,7 @@ export type PromiseResponse = Response | RTKResponse;
 export declare class Logger {
     private static LOGGER_KEY;
     private static instance;
+    private responseMap;
     private product;
     private browser;
     private os;
@@ -77,7 +78,7 @@ export declare class Logger {
     }): void;
     enableLogging(): void;
     disableLogging(): void;
-    trackPromise(promise: Promise<PromiseResponse>, { method, api_name, ...payload }: TrackPromiseParams): void;
+    trackPromise(promise: Promise<PromiseResponse>, { method, api_name, ...payload }: TrackPromiseParams): Promise<void>;
     private track;
 }
 export declare function extractBrowserInfo(): {
