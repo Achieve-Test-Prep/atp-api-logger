@@ -37,6 +37,7 @@ export type TrackPromiseParams = Pick<LogApiPayload, "api_name" | "server_type">
     method: string;
 };
 type RTKMETA = {
+    data: unknown;
     meta: {
         request: Request;
         response: Response;

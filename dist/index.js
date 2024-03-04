@@ -120,9 +120,8 @@ class Logger {
                      * In case of success the response object conains a "data" object
                      * In case of error the response object contains an "error" object
                      * */
-                    const responseClone = response.meta.response.clone();
-                    status = responseClone.status;
-                    responseData = yield responseClone.json();
+                    status = response.meta.response.status;
+                    responseData = response.data;
                 }
                 else {
                     // fetch
