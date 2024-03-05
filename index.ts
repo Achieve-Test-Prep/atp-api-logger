@@ -50,6 +50,8 @@ export type TrackPromiseParams = Pick<
   "api_name" | "server_type"
 > & {
   method: string;
+  filterKeys?: string[];
+  filterFunction?: (key: string, value: unknown) => unknown;
 };
 
 type RTKMETA = {
@@ -83,7 +85,7 @@ export class Logger {
 
   private static instance: Logger | null = null;
 
-  private responseMap: Record<string, unknown> = {};
+  private responseMap: Record<string, string> = {};
 
   private product: SupportedProducts;
 
@@ -179,7 +181,13 @@ export class Logger {
 
   public async trackPromise(
     promise: Promise<PromiseResponse>,
-    { method, api_name, ...payload }: TrackPromiseParams
+    {
+      filterKeys,
+      filterFunction,
+      method,
+      api_name,
+      ...payload
+    }: TrackPromiseParams
   ) {
     if (!this.enabled) {
       return;
@@ -218,8 +226,8 @@ export class Logger {
     if (
       responseData === null ||
       (responseData !== undefined &&
-        JSON.stringify(this.responseMap[apiName]) !==
-          JSON.stringify(responseData))
+        this.responseMap[apiName] !== JSON.stringify(responseData),
+      getReplacer(filterKeys, filterFunction))
     ) {
       this.track({
         ...payload,
@@ -230,7 +238,10 @@ export class Logger {
       });
     }
 
-    this.responseMap[apiName] = responseData;
+    this.responseMap[apiName] = JSON.stringify(
+      responseData,
+      getReplacer(filterKeys, filterFunction)
+    );
   }
 
   private track({ init_time, ...params }: TrackParams) {
@@ -329,4 +340,21 @@ export function extractBrowserInfo(): {
   }
 
   return browserInfo;
+}
+
+function getReplacer(
+  filterKeys?: string[],
+  filterFunction?: (key: string, value: unknown) => unknown
+) {
+  if (typeof filterFunction === "function") {
+    return filterFunction;
+  }
+  if (filterKeys?.length) {
+    return (key: string, value: unknown) => {
+      if (!filterKeys.includes(key)) {
+        return value;
+      }
+    };
+  }
+  return undefined;
 }

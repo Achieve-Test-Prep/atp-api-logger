@@ -101,7 +101,7 @@ class Logger {
         this.enabled = false;
     }
     trackPromise(promise, _a) {
-        var { method, api_name } = _a, payload = __rest(_a, ["method", "api_name"]);
+        var { filterKeys, filterFunction, method, api_name } = _a, payload = __rest(_a, ["filterKeys", "filterFunction", "method", "api_name"]);
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.enabled) {
                 return;
@@ -136,12 +136,12 @@ class Logger {
             }
             if (responseData === null ||
                 (responseData !== undefined &&
-                    JSON.stringify(this.responseMap[apiName]) !==
-                        JSON.stringify(responseData))) {
+                    this.responseMap[apiName] !== JSON.stringify(responseData),
+                    getReplacer(filterKeys, filterFunction))) {
                 this.track(Object.assign(Object.assign({}, payload), { api_name: apiName, init_time,
                     status, response_time: new Date().getTime() - init_time.getTime() }));
             }
-            this.responseMap[apiName] = responseData;
+            this.responseMap[apiName] = JSON.stringify(responseData, getReplacer(filterKeys, filterFunction));
         });
     }
     track(_a) {
@@ -237,3 +237,16 @@ function extractBrowserInfo() {
     return browserInfo;
 }
 exports.extractBrowserInfo = extractBrowserInfo;
+function getReplacer(filterKeys, filterFunction) {
+    if (typeof filterFunction === "function") {
+        return filterFunction;
+    }
+    if (filterKeys === null || filterKeys === void 0 ? void 0 : filterKeys.length) {
+        return (key, value) => {
+            if (!filterKeys.includes(key)) {
+                return value;
+            }
+        };
+    }
+    return undefined;
+}
