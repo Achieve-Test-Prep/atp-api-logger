@@ -45,13 +45,18 @@ export type TrackParams = Omit<
   init_time: Date;
 };
 
+type FilterKeysType = {
+  [apiName: string]: string[];
+};
+type FilterFunctionType = (key: string, value: unknown) => unknown;
+
 export type TrackPromiseParams = Pick<
   LogApiPayload,
   "api_name" | "server_type"
 > & {
   method: string;
-  filterKeys?: string[];
-  filterFunction?: (key: string, value: unknown) => unknown;
+  filterKeys?: FilterKeysType;
+  filterFunction?: FilterFunctionType;
 };
 
 type RTKMETA = {
@@ -226,8 +231,11 @@ export class Logger {
     if (
       responseData === null ||
       (responseData !== undefined &&
-        this.responseMap[apiName] !== JSON.stringify(responseData),
-      getReplacer(filterKeys, filterFunction))
+        this.responseMap[apiName] !==
+          JSON.stringify(
+            responseData,
+            getReplacer(apiName, filterKeys, filterFunction)
+          ))
     ) {
       this.track({
         ...payload,
@@ -240,7 +248,7 @@ export class Logger {
 
     this.responseMap[apiName] = JSON.stringify(
       responseData,
-      getReplacer(filterKeys, filterFunction)
+      getReplacer(apiName, filterKeys, filterFunction)
     );
   }
 
@@ -343,15 +351,16 @@ export function extractBrowserInfo(): {
 }
 
 function getReplacer(
-  filterKeys?: string[],
-  filterFunction?: (key: string, value: unknown) => unknown
-) {
+  apiName: string,
+  filterKeys?: FilterKeysType,
+  filterFunction?: FilterFunctionType
+): ((key: string, value: unknown) => unknown) | undefined {
   if (typeof filterFunction === "function") {
     return filterFunction;
   }
-  if (filterKeys?.length) {
+  if (filterKeys && filterKeys[apiName]) {
     return (key: string, value: unknown) => {
-      if (!filterKeys.includes(key)) {
+      if (!filterKeys[apiName].includes(key)) {
         return value;
       }
     };

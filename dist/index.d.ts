@@ -33,10 +33,14 @@ export type LogApiPayload = {
 export type TrackParams = Omit<LogApiPayload, "product" | "browser" | "os" | "fetched_from" | "session_id" | "init_time_stamp"> & {
     init_time: Date;
 };
+type FilterKeysType = {
+    [apiName: string]: string[];
+};
+type FilterFunctionType = (key: string, value: unknown) => unknown;
 export type TrackPromiseParams = Pick<LogApiPayload, "api_name" | "server_type"> & {
     method: string;
-    filterKeys?: string[];
-    filterFunction?: (key: string, value: unknown) => unknown;
+    filterKeys?: FilterKeysType;
+    filterFunction?: FilterFunctionType;
 };
 type RTKMETA = {
     data: unknown;

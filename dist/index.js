@@ -136,12 +136,12 @@ class Logger {
             }
             if (responseData === null ||
                 (responseData !== undefined &&
-                    this.responseMap[apiName] !== JSON.stringify(responseData),
-                    getReplacer(filterKeys, filterFunction))) {
+                    this.responseMap[apiName] !==
+                        JSON.stringify(responseData, getReplacer(apiName, filterKeys, filterFunction)))) {
                 this.track(Object.assign(Object.assign({}, payload), { api_name: apiName, init_time,
                     status, response_time: new Date().getTime() - init_time.getTime() }));
             }
-            this.responseMap[apiName] = JSON.stringify(responseData, getReplacer(filterKeys, filterFunction));
+            this.responseMap[apiName] = JSON.stringify(responseData, getReplacer(apiName, filterKeys, filterFunction));
         });
     }
     track(_a) {
@@ -237,13 +237,13 @@ function extractBrowserInfo() {
     return browserInfo;
 }
 exports.extractBrowserInfo = extractBrowserInfo;
-function getReplacer(filterKeys, filterFunction) {
+function getReplacer(apiName, filterKeys, filterFunction) {
     if (typeof filterFunction === "function") {
         return filterFunction;
     }
-    if (filterKeys === null || filterKeys === void 0 ? void 0 : filterKeys.length) {
+    if (filterKeys && filterKeys[apiName]) {
         return (key, value) => {
-            if (!filterKeys.includes(key)) {
+            if (!filterKeys[apiName].includes(key)) {
                 return value;
             }
         };
