@@ -29,8 +29,9 @@ export type LogApiPayload = {
     init_time_stamp: string;
     response_time: number;
     status: number;
+    logger_version: string;
 };
-export type TrackParams = Omit<LogApiPayload, "product" | "browser" | "os" | "fetched_from" | "session_id" | "init_time_stamp"> & {
+export type TrackParams = Omit<LogApiPayload, "product" | "browser" | "os" | "fetched_from" | "session_id" | "init_time_stamp" | "logger_version"> & {
     init_time: Date;
 };
 type FilterKeysType = {
@@ -39,8 +40,10 @@ type FilterKeysType = {
 type FilterFunctionType = (key: string, value: unknown) => unknown;
 export type TrackPromiseParams = Pick<LogApiPayload, "api_name" | "server_type"> & {
     method: string;
-    filterKeys?: FilterKeysType;
-    filterFunction?: FilterFunctionType;
+    filterLogs?: {
+        filterKeys?: FilterKeysType;
+        filterFunction?: FilterFunctionType;
+    };
 };
 type RTKMETA = {
     data: unknown;
@@ -85,7 +88,7 @@ export declare class Logger {
     }): void;
     enableLogging(): void;
     disableLogging(): void;
-    trackPromise(promise: Promise<PromiseResponse>, { filterKeys, filterFunction, method, api_name, ...payload }: TrackPromiseParams): Promise<void>;
+    trackPromise(promise: Promise<PromiseResponse>, { filterLogs, method, api_name, ...payload }: TrackPromiseParams): Promise<void>;
     private track;
 }
 export declare function extractBrowserInfo(): {

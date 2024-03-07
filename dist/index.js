@@ -19,8 +19,12 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.extractBrowserInfo = exports.Logger = exports.SupportedServerTypes = exports.SupportedProducts = void 0;
+const package_json_1 = __importDefault(require("./package.json"));
 var SupportedProducts;
 (function (SupportedProducts) {
     SupportedProducts["PREP_PORTAL"] = "1";
@@ -101,7 +105,7 @@ class Logger {
         this.enabled = false;
     }
     trackPromise(promise, _a) {
-        var { filterKeys, filterFunction, method, api_name } = _a, payload = __rest(_a, ["filterKeys", "filterFunction", "method", "api_name"]);
+        var { filterLogs, method, api_name } = _a, payload = __rest(_a, ["filterLogs", "method", "api_name"]);
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.enabled) {
                 return;
@@ -134,14 +138,18 @@ class Logger {
                 responseData = null;
                 status = error.status || 600; // 600 for CORS/NETWORK
             }
-            if (responseData === null ||
+            const logAll = !filterLogs;
+            if (logAll ||
+                responseData === null ||
                 (responseData !== undefined &&
                     this.responseMap[apiName] !==
-                        JSON.stringify(responseData, getReplacer(apiName, filterKeys, filterFunction)))) {
+                        JSON.stringify(responseData, getReplacer(apiName, filterLogs.filterKeys, filterLogs.filterFunction)))) {
                 this.track(Object.assign(Object.assign({}, payload), { api_name: apiName, init_time,
                     status, response_time: new Date().getTime() - init_time.getTime() }));
             }
-            this.responseMap[apiName] = JSON.stringify(responseData, getReplacer(apiName, filterKeys, filterFunction));
+            if (!logAll) {
+                this.responseMap[apiName] = JSON.stringify(responseData, getReplacer(apiName, filterLogs.filterKeys, filterLogs.filterFunction));
+            }
         });
     }
     track(_a) {
@@ -153,7 +161,7 @@ class Logger {
             .toISOString()
             .replace("T", " ")
             .slice(0, 19);
-        const payload = Object.assign(Object.assign({}, params), { product: this.product, browser: this.browser, os: this.os, fetched_from: window.location.pathname, session_id: this.session_id, customer_id: this.customer_id, lead_id: this.lead_id, init_time_stamp });
+        const payload = Object.assign(Object.assign({}, params), { product: this.product, browser: this.browser, os: this.os, fetched_from: window.location.pathname, session_id: this.session_id, customer_id: this.customer_id, lead_id: this.lead_id, init_time_stamp, logger_version: package_json_1.default.version });
         fetch("https://mobileslog.com/api_log/api/log.php", {
             method: "POST",
             body: JSON.stringify(payload),
