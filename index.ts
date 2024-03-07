@@ -1,3 +1,5 @@
+import packageJson from "./package.json";
+
 export enum SupportedProducts {
   PREP_PORTAL = "1",
   INSTRUCTOR_PORTAL = "2",
@@ -31,6 +33,7 @@ export type LogApiPayload = {
   init_time_stamp: string;
   response_time: number;
   status: number;
+  logger_version: string;
 };
 
 export type TrackParams = Omit<
@@ -41,6 +44,7 @@ export type TrackParams = Omit<
   | "fetched_from"
   | "session_id"
   | "init_time_stamp"
+  | "logger_version"
 > & {
   init_time: Date;
 };
@@ -55,8 +59,10 @@ export type TrackPromiseParams = Pick<
   "api_name" | "server_type"
 > & {
   method: string;
-  filterKeys?: FilterKeysType;
-  filterFunction?: FilterFunctionType;
+  filterLogs?: {
+    filterKeys?: FilterKeysType;
+    filterFunction?: FilterFunctionType;
+  };
 };
 
 type RTKMETA = {
@@ -186,13 +192,7 @@ export class Logger {
 
   public async trackPromise(
     promise: Promise<PromiseResponse>,
-    {
-      filterKeys,
-      filterFunction,
-      method,
-      api_name,
-      ...payload
-    }: TrackPromiseParams
+    { filterLogs, method, api_name, ...payload }: TrackPromiseParams
   ) {
     if (!this.enabled) {
       return;
@@ -228,13 +228,20 @@ export class Logger {
       status = error.status || 600; // 600 for CORS/NETWORK
     }
 
+    const logAll = !filterLogs;
+
     if (
+      logAll ||
       responseData === null ||
       (responseData !== undefined &&
         this.responseMap[apiName] !==
           JSON.stringify(
             responseData,
-            getReplacer(apiName, filterKeys, filterFunction)
+            getReplacer(
+              apiName,
+              filterLogs.filterKeys,
+              filterLogs.filterFunction
+            )
           ))
     ) {
       this.track({
@@ -246,10 +253,12 @@ export class Logger {
       });
     }
 
-    this.responseMap[apiName] = JSON.stringify(
-      responseData,
-      getReplacer(apiName, filterKeys, filterFunction)
-    );
+    if (!logAll) {
+      this.responseMap[apiName] = JSON.stringify(
+        responseData,
+        getReplacer(apiName, filterLogs.filterKeys, filterLogs.filterFunction)
+      );
+    }
   }
 
   private track({ init_time, ...params }: TrackParams) {
@@ -271,6 +280,7 @@ export class Logger {
       customer_id: this.customer_id,
       lead_id: this.lead_id,
       init_time_stamp,
+      logger_version: packageJson.version,
     };
 
     fetch("https://mobileslog.com/api_log/api/log.php", {
