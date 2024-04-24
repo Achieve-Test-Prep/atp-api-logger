@@ -92,6 +92,8 @@ type RTKResponse = RTKResponseSuccess | RTKResponseError;
 export type PromiseResponse = Response | RTKResponse;
 
 export class Logger {
+  private static BASE_URL = "https://logger.api.achievetestprep.com/api";
+
   private static LOGGER_KEY = "tracker_session_id";
 
   private static instance: Logger | null = null;
@@ -283,7 +285,7 @@ export class Logger {
       logger_version: packageJson.version,
     };
 
-    fetch("https://mobileslog.com/api_log/api/log.php", {
+    fetch(Logger.BASE_URL + "/log.php", {
       method: "POST",
       body: JSON.stringify(payload),
       headers: {
